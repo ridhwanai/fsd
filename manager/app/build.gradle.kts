@@ -31,15 +31,11 @@ android {
 
     signingConfigs {
         create("release") {
-            val ksPwd = System.getenv("KS_PWD")
-            if (!ksPwd.isNullOrBlank()) {
-                storeFile = file("azenith.jks")
-                storePassword = ksPwd
-                keyAlias = "azenith_key"
-                keyPassword = ksPwd
-            } else {
-                initWith(getByName("debug"))
-            }
+            val ksPwd = System.getenv("KS_PWD")?.takeIf { it.isNotBlank() } ?: "azenith"
+            storeFile = file("azenith.jks")
+            storePassword = ksPwd
+            keyAlias = "azenith_key"
+            keyPassword = ksPwd
         }
     }
     
