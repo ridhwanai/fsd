@@ -1,0 +1,17 @@
+{
+    "metamodule": false,
+    "summary": "Specialized auto Performance module exclusively engineered for MediaTek (MTK) chipsets.",
+    "sourceUrl": "https://github.com/ridhwanai/fsd",
+    "additionalAuthors": [
+        {
+            "type": "add",
+            "name": "Kanaochar",
+            "link": "https://github.com/kanaodnd"
+        },
+        {
+            "type": "add",
+            "name": "Xinyaです",
+            "link": "https://github.com/ryanistr"
+        }
+    ]
+}

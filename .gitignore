@@ -1,0 +1,8 @@
+target/
+build/
+.gradle/
+local.properties
+*.apk
+*.ap_
+*.aab
+sys.azenith-service
