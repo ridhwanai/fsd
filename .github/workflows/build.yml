@@ -119,11 +119,7 @@ jobs:
         working-directory: ./manager
         run: |
           chmod +x ./gradlew
-          if [ -n "$KS_PWD" ] && [ "$V_TYPE" != "experimental" ]; then
-            ./gradlew clean assembleRelease
-          else
-            ./gradlew clean assembleDebug
-          fi
+          ./gradlew clean assembleRelease
         env:
           KS_PWD: ${{ secrets.KEYSTORE_PASSWORD }}
                     
