@@ -14,6 +14,7 @@
   - Dual-Cluster CPUSET isolation (restricting background/system tasks to LITTLE A55 cores 0-5, reserving Big A75 cores 6-7 100% for foreground/games).
   - eMMC 5.1 storage I/O queue tuning (512KB read-ahead, 128 requests, CPU rq_affinity).
   - Virtual memory & zRAM thrashing prevention tuned specifically for 4GB LPDDR4X.
+- **Credits & Contributor**: Special optimization & improvement credit to **RyoClarity** ([@ryoclarity](https://t.me/ryoclarity)).
 
 ## AZenith 5.3
 ### • Changelog

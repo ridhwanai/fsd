@@ -1,5 +1,6 @@
 #
 # Copyright (C) 2026-2027 Zexshia
+# Copyright (C) 2026 RyoClarity (@ryoclarity)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -145,6 +146,7 @@ abort_arch() {
 
 installation_complete() {
   echo "- AZenith has been successfully installed"
+  echo "- Improved by RyoClarity (@ryoclarity)"
   echo "- Thank you for choosing AZenith!"
   echo "- Please reboot your device."
   echo "- Open Manager from Action"
@@ -154,6 +156,7 @@ installation_complete() {
 # Displaybanner
 echo ""
 echo "              AZenith              "
+echo "    Improved by RyoClarity (@ryoclarity)"
 echo ""
 echo "- Installing AZenith..."
 

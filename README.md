@@ -81,6 +81,7 @@ We welcome contributions to make **AZenith** even better!
 | **Author / 作者** | [@Zexshia](https://github.com/Liliya2727) |
 | **Collaborator / 合作者** | [@rianixia](https://github.com/ryanistr) |
 | **Collaborator / 合作者** | [@kanaochar](https://github.com/kanaodnd) |
+| **Improvement & Optimizer / 改进与优化** | [@RyoClarity](https://t.me/ryoclarity) |
 
 ### Sources & References / 来源与参考
 - **App Translation and Internationalization / 应用翻译与国际化:** @YIDYIF
@@ -99,6 +100,9 @@ Get the latest news, updates, and support by following our official channels:
   </a>
   <a href="https://t.me/Zexshia">
     <img src="https://img.shields.io/badge/Support-Author-red?style=for-the-badge&logo=telegram" alt="Support">
+  </a>
+  <a href="https://t.me/ryoclarity">
+    <img src="https://img.shields.io/badge/Improvement-@ryoclarity-0088cc?style=for-the-badge&logo=telegram" alt="RyoClarity Telegram">
   </a>
 </p>
 

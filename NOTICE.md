@@ -6,6 +6,7 @@ This project, AZenith, incorporates code and functionality from the following op
 AZenith is licensed under the Apache License, Version 2.0.
 
 Copyright (C) 2025-2026 Zexshia
+Copyright (C) 2026 RyoClarity (@ryoclarity)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this project except in compliance with the License.

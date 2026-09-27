@@ -249,7 +249,7 @@
     <string name="str_app_info">App Info</string>
     <string name="str_app_specific_settings_will_ove">App-specific settings will override global settings; keep default to inherit global configuration</string>
     <string name="str_apply_add_on_configurations_ta">Apply additional optimization configurations tailored to the device. If a game experiences performance drops, try disabling the corresponding optimization.</string>
-    <string name="str_archhaven_devs">ArchHaven Developers</string>
+    <string name="str_archhaven_devs">ArchHaven Developers &amp; RyoClarity (@ryoclarity)</string>
     <string name="str_author">Author</string>
     <string name="str_auto_mode">Auto Mode</string>
     <string name="str_available_nodes">Available Target Nodes (%1$d)</string>
