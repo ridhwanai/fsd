@@ -344,7 +344,7 @@ if [ -z "$(getprop persist.sys.azenithconf.renderer)" ]; then
 fi
 
 if [ -z "$(getprop persist.sys.azenithconf.preloadbudget)" ]; then
-    setprop persist.sys.azenithconf.preloadbudget 500M
+    setprop persist.sys.azenithconf.preloadbudget 400M
 fi
 
 if [ -z "$(getprop persist.sys.azenithconf.AIenabled)" ]; then
@@ -356,31 +356,35 @@ fi
 echo "- Disable Debugmode"
 setprop persist.sys.azenith.debugmode "false"
 
-# Set config properties to use
+# Set config properties to use with optimal defaults
 echo "- Setting config properties..."
-props="
-persist.sys.azenithconf.logd
-persist.sys.azenithconf.DThermal
-persist.sys.azenithconf.SFL
-persist.sys.azenithconf.malisched
-persist.sys.azenithconf.fpsged
-persist.sys.azenithconf.schedtunes
-persist.sys.azenithconf.clearbg
-persist.sys.azenithconf.APreload
-persist.sys.azenithconf.cpulimit
-persist.sys.azenithconf.dnd
-persist.sys.azenithconf.justintime
-persist.sys.azenithconf.disabletrace
-persist.sys.azenithconf.thermalcore
-persist.sys.azenithconf.fstrim
-persist.sys.azenithconf.usefpsgo
-"
-for prop in $props; do
+set_default_prop() {
+	local prop="$1"
+	local def="$2"
+	local curval
 	curval=$(getprop "$prop")
 	if [ -z "$curval" ]; then
-		setprop "$prop" 0
+		setprop "$prop" "$def"
 	fi
-done
+}
+
+set_default_prop "persist.sys.azenithconf.logd" 1
+set_default_prop "persist.sys.azenithconf.DThermal" 0
+set_default_prop "persist.sys.azenithconf.SFL" 1
+set_default_prop "persist.sys.azenithconf.malisched" 1
+set_default_prop "persist.sys.azenithconf.fpsged" 1
+set_default_prop "persist.sys.azenithconf.schedtunes" 1
+set_default_prop "persist.sys.azenithconf.clearbg" 1
+set_default_prop "persist.sys.azenithconf.APreload" 1
+set_default_prop "persist.sys.azenithconf.cpulimit" 0
+set_default_prop "persist.sys.azenithconf.dnd" 0
+set_default_prop "persist.sys.azenithconf.justintime" 0
+set_default_prop "persist.sys.azenithconf.disabletrace" 1
+set_default_prop "persist.sys.azenithconf.thermalcore" 1
+set_default_prop "persist.sys.azenithconf.fstrim" 1
+set_default_prop "persist.sys.azenithconf.usefpsgo" 1
+set_default_prop "persist.sys.azenithconf.litemode" 1
+set_default_prop "persist.sys.azenith.dropforeground" 1
 
 extract "$ZIPFILE" AZenith.apk "$MODPATH"
 

@@ -23,17 +23,18 @@ readonly BIN_SVC="$MODDIR/system/bin/sys.azenith-service"
 get_state() {
     local val
     val=$(getprop "$1")
-    echo "${val:-0}"
+    local def="${2:-0}"
+    echo "${val:-$def}"
 }
 
-LOGD_STATE=$(get_state persist.sys.azenithconf.logd)
-DTHERMAL_STATE=$(get_state persist.sys.azenithconf.DThermal)
-SFL_STATE=$(get_state persist.sys.azenithconf.SFL)
-MALISCHED_STATE=$(get_state persist.sys.azenithconf.malisched)
-FPSGED_STATE=$(get_state persist.sys.azenithconf.fpsged)
-SCHEDTUNES_STATE=$(get_state persist.sys.azenithconf.schedtunes)
-JUSTINTIME_STATE=$(get_state persist.sys.azenithconf.justintime)
-DISTRACE_STATE=$(get_state persist.sys.azenithconf.disabletrace)
+LOGD_STATE=$(get_state persist.sys.azenithconf.logd 1)
+DTHERMAL_STATE=$(get_state persist.sys.azenithconf.DThermal 0)
+SFL_STATE=$(get_state persist.sys.azenithconf.SFL 1)
+MALISCHED_STATE=$(get_state persist.sys.azenithconf.malisched 1)
+FPSGED_STATE=$(get_state persist.sys.azenithconf.fpsged 1)
+SCHEDTUNES_STATE=$(get_state persist.sys.azenithconf.schedtunes 1)
+JUSTINTIME_STATE=$(get_state persist.sys.azenithconf.justintime 0)
+DISTRACE_STATE=$(get_state persist.sys.azenithconf.disabletrace 1)
 
 readonly LIST_LOGGER="logd traced statsd tcpdump cnss_diag subsystem_ramdump charge_logger wlan_logging"
 
@@ -384,18 +385,19 @@ prefsettings() {
 		resetprop -n debug.hwui.use_partial_updates true
 		resetprop -n debug.hwui.skip_eglmanager_telemetry true
 		resetprop -n debug.hwui.level 0
-
-		# TOUCH RESPONSIVENESS & INPUT LATENCY REDUCTION
-		resetprop -n touch.pressure.scale 0.001
-		resetprop -n touch.size.calibration geometric
-		resetprop -n view.touch_slop 2
-		resetprop -n view.scroll_friction 0.004
-		resetprop -n ro.input.resampling 1
-		resetprop -n debug.input.resampling 1
-		resetprop -n debug.input.resampling.use_frames 1
-		resetprop -n debug.touch.sampling 1
-		resetprop -n persist.sys.touch.smooth 1
     fi
+
+    # TOUCH RESPONSIVENESS & INPUT LATENCY REDUCTION
+    resetprop -n touch.pressure.scale 0.001
+    resetprop -n touch.size.calibration geometric
+    resetprop -n view.touch_slop 2
+    resetprop -n view.scroll_friction 0.004
+    resetprop -n ro.input.resampling 1
+    resetprop -n debug.input.resampling 1
+    resetprop -n debug.input.resampling.use_frames 1
+    resetprop -n debug.touch.sampling 1
+    resetprop -n persist.sys.touch.smooth 1
+
     
     # DISABLE THERMAL
     if [ "$DTHERMAL_STATE" -eq 1 ]; then
@@ -455,6 +457,58 @@ prefsettings() {
         for logger in $LIST_LOGGER; do stop "$logger" 2>/dev/null; done
     else
         for logger in $LIST_LOGGER; do start "$logger" 2>/dev/null; done
+    fi
+
+    # DUAL-CLUSTER CPUSET ISOLATION (MediaTek 6 Little + 2 Big Cores)
+    if [ -f "/sys/devices/system/cpu/possible" ] && [ "$(cat /sys/devices/system/cpu/possible 2>/dev/null)" = "0-7" ]; then
+        write_val "0-5" "/dev/cpuset/background/cpus" false
+        write_val "0-5" "/dev/cpuset/system-background/cpus" false
+        write_val "0-5" "/dev/cpuset/restricted/cpus" false
+        write_val "0-7" "/dev/cpuset/foreground/cpus" false
+        write_val "0-7" "/dev/cpuset/top-app/cpus" false
+    fi
+
+    # 4GB RAM & EMMC 5.1 STORAGE RESPONSIVENESS
+    write_val "80" "/proc/sys/vm/vfs_cache_pressure" false
+    write_val "60" "/proc/sys/vm/swappiness" false
+    write_val "20" "/proc/sys/vm/dirty_ratio" false
+    write_val "5" "/proc/sys/vm/dirty_background_ratio" false
+    write_val "500" "/proc/sys/vm/dirty_expire_centisecs" false
+    write_val "100" "/proc/sys/vm/dirty_writeback_centisecs" false
+
+    for b in /sys/block/mmcblk* /sys/block/sd*; do
+        [ -d "$b" ] || continue
+        write_val "512" "$b/queue/read_ahead_kb" false
+        write_val "128" "$b/queue/nr_requests" false
+        write_val "0" "$b/queue/iostats" false
+        write_val "2" "$b/queue/rq_affinity" false
+        write_val "0" "$b/queue/add_random" false
+    done
+
+    # MEDIATEK HARDWARE TOUCH PANEL & PERFMGR BOOST
+    write_val "1" "/proc/perfmgr/touch_boost" false
+    write_val "1" "/sys/module/perfmgr/parameters/perfmgr_enable" false
+    write_val "1" "/sys/module/perfmgr_touch/parameters/touch_boost_enable" false
+    write_val "150" "/sys/module/perfmgr_touch/parameters/touch_boost_duration_ms" false
+    write_val "1" "/proc/touchpanel/report_rate" false
+    write_val "1" "/proc/touchpanel/touch_rate" false
+    write_val "1" "/sys/class/touch/touch_dev/touch_active" false
+
+    # ANDROID 13 & LINEAGEOS 20 ART & SURFACEFLINGER OPTIMIZATION
+    resetprop -n debug.sf.latch_unsignaled 1
+    resetprop -n debug.sf.enable_gl_backpressure 1
+    resetprop -n debug.hwui.use_hint_manager true
+    resetprop -n debug.hwui.target_cpu_time_percent 70
+    resetprop -n dalvik.vm.dex2oat-threads 4
+    resetprop -n dalvik.vm.image-dex2oat-threads 4
+    resetprop -n dalvik.vm.boot-dex2oat-threads 4
+    resetprop -n dalvik.vm.dex2oat-filter speed-profile
+    resetprop -n pm.dexopt.bg-dexopt speed-profile
+
+    # MULTI-GEN LRU (MGLRU) KERNEL TUNING FOR ANDROID 13
+    if [ -f "/sys/kernel/mm/lru_gen/enabled" ]; then
+        write_val "7" "/sys/kernel/mm/lru_gen/enabled" false
+        write_val "1000" "/sys/kernel/mm/lru_gen/min_ttl_ms" false
     fi
 }
 

@@ -1,3 +1,20 @@
+## AZenith 6.0 (Final EOL)
+### • Changelog
+- **Final EOL Milestone**: Comprehensive overhaul and final optimization release specifically tailored for MediaTek Helio G85 & AOSP / LineageOS 20 (Android 13).
+- **Reworked Lite Performance Mode**:
+  - Full MediaTek Performance Suite (FPSGO VIP boost, GED game mode, GPU Mali job serialization, Touch Panel rate boost) now operates in Lite Mode.
+  - Smart thermal frequency capping: Capping cluster frequencies at ~85% (1750-1800 MHz) with dynamic GPU DVFS, providing locked 60 FPS while keeping the phone cool and battery drain ultra-low.
+- **LineageOS & Android 13 (Tiramisu) Deep Optimizations**:
+  - Activated Multi-Gen LRU (MGLRU) page table walkers (`/sys/kernel/mm/lru_gen/enabled`) for superior memory management on 4GB RAM.
+  - Tuned AOSP ART compiler threads and background dex2oat parameters (`speed-profile`).
+  - Added Android 13 SurfaceFlinger early presentation (`latch_unsignaled`) and HWUI Performance Hint API (`use_hint_manager`).
+- **Global Touch Latency & Responsiveness**:
+  - 4-layer touch responsiveness and input latency reduction are now globally active from boot across all profiles.
+- **Redmi Note 9 (merlin) Hardware Tuning**:
+  - Dual-Cluster CPUSET isolation (restricting background/system tasks to LITTLE A55 cores 0-5, reserving Big A75 cores 6-7 100% for foreground/games).
+  - eMMC 5.1 storage I/O queue tuning (512KB read-ahead, 128 requests, CPU rq_affinity).
+  - Virtual memory & zRAM thrashing prevention tuned specifically for 4GB LPDDR4X.
+
 ## AZenith 5.3
 ### • Changelog
 - **Pure MediaTek Architecture**: Transformed entire AZenith engine exclusively for MediaTek (Dimensity & Helio). All non-MTK code permanently purged.

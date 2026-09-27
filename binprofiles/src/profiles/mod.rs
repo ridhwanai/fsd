@@ -127,7 +127,7 @@ pub fn performance_profile() {
     setprop("touch.size.calibration", "geometric");
     setprop("view.touch_slop", "2");
     setprop("view.scroll_friction", "0.004");
-    setprop("ro.input.resampling", "1");
+    resetprop("ro.input.resampling", "1");
     setprop("debug.input.resampling", "1");
     setprop("debug.input.resampling.use_frames", "1");
     setprop("debug.touch.sampling", "1");
@@ -180,9 +180,9 @@ pub fn performance_profile() {
         clear_background_apps();
     }
 
-    if !lite_mode {
-        mediatek_performance();
-    }
+    // Apply MediaTek Performance Engine for both Full and Lite Performance modes
+    // Note: CPU frequency ceiling for Lite mode is already enforced in setgamefreq / setgamefreqppm
+    mediatek_performance();
 
     log_verbose("Performance Profile Applied Successfully!");
 }
@@ -413,12 +413,15 @@ pub fn initialize() {
         }
     }
     
-    // I/O Tweaks
+    // I/O Tweaks (eMMC 5.1 & Storage optimization)
     if let Ok(paths) = glob::glob("/sys/block/*") {
         for path in paths.flatten() {
             if let Some(p_str) = path.to_str() {
                 write_lock("0", &format!("{}/queue/iostats", p_str));
                 write_lock("0", &format!("{}/queue/add_random", p_str));
+                write_lock("512", &format!("{}/queue/read_ahead_kb", p_str));
+                write_lock("128", &format!("{}/queue/nr_requests", p_str));
+                write_lock("2", &format!("{}/queue/rq_affinity", p_str));
             }
         }
     }
@@ -450,10 +453,26 @@ pub fn initialize() {
     write_lock("1000000", "/proc/sys/kernel/sched_min_granularity_ns");
     write_lock("1500000", "/proc/sys/kernel/sched_wakeup_granularity_ns");
 
-    // VM Tweaks
+    // VM Tweaks (4GB RAM & eMMC 5.1 Optimization)
     write_lock("0", "/proc/sys/vm/page-cluster");
     write_lock("15", "/proc/sys/vm/stat_interval");
     write_lock("0", "/proc/sys/vm/compaction_proactiveness");
+    write_lock("80", "/proc/sys/vm/vfs_cache_pressure");
+    write_lock("60", "/proc/sys/vm/swappiness");
+    write_lock("20", "/proc/sys/vm/dirty_ratio");
+    write_lock("5", "/proc/sys/vm/dirty_background_ratio");
+    write_lock("500", "/proc/sys/vm/dirty_expire_centisecs");
+    write_lock("100", "/proc/sys/vm/dirty_writeback_centisecs");
+
+    // Dual-Cluster Cpuset Optimization (MediaTek 6 Little + 2 Big Cores)
+    let possible_cores = fs::read_to_string("/sys/devices/system/cpu/possible").unwrap_or_default();
+    if possible_cores.trim() == "0-7" {
+        write_lock("0-5", "/dev/cpuset/background/cpus");
+        write_lock("0-5", "/dev/cpuset/system-background/cpus");
+        write_lock("0-5", "/dev/cpuset/restricted/cpus");
+        write_lock("0-7", "/dev/cpuset/foreground/cpus");
+        write_lock("0-7", "/dev/cpuset/top-app/cpus");
+    }
 
     // Vendor Bloats & Module Tweaks
     write_lock("0", "/sys/module/mmc_core/parameters/use_spi_crc");
@@ -466,6 +485,34 @@ pub fn initialize() {
     let libs = "libunity.so, libil2cpp.so, libmain.so, libUE4.so, libUE5.so, libvulkan.so, libGLESv2.so, libanort.so, libgodot_android.so, libgdx.so, libgdx-box2d.so, libminecraftpe.so, libLive2DCubismCore.so, libyuzu-android.so, libryujinx.so, libcitra-android.so, libhdr_pro_engine.so, libandroidx.graphics.path.so, libeffect.so";
     write_lock(libs, "/proc/sys/kernel/sched_lib_name");
     write_lock("255", "/proc/sys/kernel/sched_lib_mask_force");
+
+    // Framework Touch Responsiveness & Latency Reduction (Globally Active)
+    setprop("touch.pressure.scale", "0.001");
+    setprop("touch.size.calibration", "geometric");
+    setprop("view.touch_slop", "2");
+    setprop("view.scroll_friction", "0.004");
+    resetprop("ro.input.resampling", "1");
+    setprop("debug.input.resampling", "1");
+    setprop("debug.input.resampling.use_frames", "1");
+    setprop("debug.touch.sampling", "1");
+    setprop("persist.sys.touch.smooth", "1");
+
+    // Android 13 & LineageOS 20 Multi-Gen LRU (MGLRU)
+    if Path::new("/sys/kernel/mm/lru_gen/enabled").exists() {
+        write_lock("7", "/sys/kernel/mm/lru_gen/enabled");
+        write_lock("1000", "/sys/kernel/mm/lru_gen/min_ttl_ms");
+    }
+
+    // Android 13 & AOSP SurfaceFlinger & HWUI Performance Hint API
+    resetprop("debug.sf.latch_unsignaled", "1");
+    resetprop("debug.sf.enable_gl_backpressure", "1");
+    resetprop("debug.hwui.use_hint_manager", "true");
+    resetprop("debug.hwui.target_cpu_time_percent", "70");
+    resetprop("dalvik.vm.dex2oat-threads", "4");
+    resetprop("dalvik.vm.image-dex2oat-threads", "4");
+    resetprop("dalvik.vm.boot-dex2oat-threads", "4");
+    resetprop("dalvik.vm.dex2oat-filter", "speed-profile");
+    resetprop("pm.dexopt.bg-dexopt", "speed-profile");
 
     systemv("sys.azenith-utilityconf FSTrim");
     systemv("sh /data/adb/modules/AZenith/preferenced-tweaks.sh");

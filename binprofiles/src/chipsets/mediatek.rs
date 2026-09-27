@@ -143,7 +143,11 @@ pub fn mediatek_performance() {
 
     // 2. CPUFreq, CCI & EAS Optimization
     write_lock("1", "/proc/cpufreq/cpufreq_cci_mode"); // Boost Cache Coherent Interconnect bandwidth
-    write_lock("3", "/proc/cpufreq/cpufreq_power_mode"); // Max performance power mode
+    if get_litemode() {
+        write_lock("1", "/proc/cpufreq/cpufreq_power_mode"); // Efficient power mode in Lite
+    } else {
+        write_lock("3", "/proc/cpufreq/cpufreq_power_mode"); // Max performance power mode
+    }
     write_lock("0", "/proc/cpufreq/cpufreq_sched_disable");
     write_lock("0", "/sys/devices/system/cpu/eas/enable");
 
@@ -242,13 +246,22 @@ pub fn mediatek_performance() {
     write_lock("1", "/sys/devices/platform/boot_dramboost/dramboost/dramboost");
 
     // 5. GPU Tuning (Mali & PowerVR)
-    if Path::new("/proc/gpufreq").exists() {
-        if let Some(freq) = get_mtk_gpu_max_freq() {
-            write_lock(&freq.to_string(), "/proc/gpufreq/gpufreq_opp_freq");
+    let is_lite = get_litemode();
+    if !is_lite {
+        if Path::new("/proc/gpufreq").exists() {
+            if let Some(freq) = get_mtk_gpu_max_freq() {
+                write_lock(&freq.to_string(), "/proc/gpufreq/gpufreq_opp_freq");
+            }
+            write_lock("0", "/proc/gpufreq/gpufreq_opp_idx");
+        } else if Path::new("/proc/gpufreqv2").exists() {
+            write_lock("0", "/proc/gpufreqv2/fix_target_opp_index");
         }
-        write_lock("0", "/proc/gpufreq/gpufreq_opp_idx");
-    } else if Path::new("/proc/gpufreqv2").exists() {
-        write_lock("0", "/proc/gpufreqv2/fix_target_opp_index");
+    } else {
+        if Path::new("/proc/gpufreq").exists() {
+            write_lock("0", "/proc/gpufreq/gpufreq_opp_freq");
+        } else if Path::new("/proc/gpufreqv2").exists() {
+            write_lock("-1", "/proc/gpufreqv2/fix_target_opp_index");
+        }
     }
 
     if Path::new("/proc/gpufreq/gpufreq_power_limited").exists() {
