@@ -173,6 +173,10 @@ mkdir -p "$MODULE_CONFIG/gamelist"
 mkdir -p "$MODPATH/system/bin"
 echo "- Create module config"
 
+# Remove any lingering anti-bootloop disable flags from previous installations
+rm -f "$MODPATH/disable" "/data/adb/modules/AZenith/disable" "/data/adb/modules_update/AZenith/disable"
+rm -f "$MODPATH/count.sh" "/data/adb/modules/AZenith/count.sh" "/data/adb/modules_update/AZenith/count.sh"
+
 # Flashable integrity checkup
 echo "- Extracting verify.sh"
 unzip -o "$ZIPFILE" 'verify.sh' -d "$TMPDIR" >&2
